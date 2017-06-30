@@ -1,0 +1,48 @@
+#!/bin/sh
+
+# Setup logging fifos.
+[ ! -e /run/log/unifi-controller ] && mkfifo /run/log/unifi-controller
+
+# Setup the additional fifos 
+[ ! -e /run/log/unifi-server ] && mkfifo /run/log/unifi-server
+[ ! -e /run/log/unifi-mongodb ] && mkfifo /run/log/unifi-mongodb
+
+mkdir -p /run/unifi
+
+mkdir -p ${DATA_DIR}/unifi-controller/data
+mkdir -p /run/unifi
+
+# There's no easy way to redirect the mongo logs, so do it here.
+mkdir -p /run/unifi-logs
+[ ! -e /run/unifi-logs/mongod.log ] && ln -sf /run/log/unifi-mongodb /run/unifi-logs/mongod.log
+
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
+export PATH=/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin:$PATH
+
+JVM_OPTS="
+  -Dunifi.datadir=${DATA_DIR}/unifi-controller/data
+  -Dunifi.rundir=/run/unifi
+  -Dunifi.logdir=/run/unifi-logs
+
+  -Dlog4j.configuration=file:/usr/lib/unifi/lib/log4j.properties
+
+  -Djava.awt.headless=false
+  -Dfile.encoding=UTF-8"
+
+if [ ! -z "${JVM_MAX_HEAP_SIZE}" ]; then
+  JVM_OPTS="${JVM_OPTS} -Xmx${JVM_MAX_HEAP_SIZE}"
+fi
+
+if [ ! -z "${JVM_INIT_HEAP_SIZE}" ]; then
+  JVM_OPTS="${JVM_OPTS} -Xms${JVM_INIT_HEAP_SIZE}"
+fi
+
+if [ ! -z "${JVM_MAX_THREAD_STACK_SIZE}" ]; then
+  JVM_OPTS="${JVM_OPTS} -Xss${JVM_MAX_THREAD_STACK_SIZE}"
+fi
+
+cd /usr/lib/unifi
+
+exec java $JVM_OPTS \
+    -classpath /usr/share/java/commons-daemon.jar:/usr/lib/unifi/lib/ace.jar \
+    com.ubnt.ace.Launcher start
