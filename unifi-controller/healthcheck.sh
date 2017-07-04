@@ -2,7 +2,7 @@
 # Docker Healthcheck
 
 # Check the HTTP endpoint is listening
-if ! curl -L -s "http://127.0.0.1:8080/" ; then
+if ! curl -s "http://127.0.0.1:8080/" ; then
     exit 1
 fi
 
