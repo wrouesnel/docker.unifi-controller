@@ -1,0 +1,21 @@
+sudo: required
+services:
+- docker
+before_install:
+- curl -fsSL http://apt.dockerproject.org/gpg | sudo apt-key add -
+- sudo add-apt-repository "deb https://apt.dockerproject.org/repo ubuntu-$(lsb_release -cs) main"
+- sudo apt-get update
+- sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine
+script:
+- export TAG=$TRAVIS_BUILD_NUMBER
+- make all
+- docker tag $(cat .dockerid) $DOCKER_IMAGE:$TAG
+after_success:
+- |-
+  if [ $TRAVIS_PULL_REQUEST != "true" ]; then docker login -u $DOCKER_USER -p $DOCKER_PASS ; export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi` ;
+  docker tag $DOCKER_IMAGE:$TRAVIS_BUILD_NUMBER $DOCKER_IMAGE:$TAG ; if [ ! -z "$TRAVIS_TAG" ]; then docker tag $DOCKER_IMAGE:$TRAVIS_BUILD_NUMBER $DOCKER_IMAGE:$TRAVIS_TAG ; fi ; docker rmi $DOCKER_IMAGE:$TRAVIS_BUILD_NUMBER ; docker push $DOCKER_IMAGE ; fi
+env:
+  global:
+  - DOCKER_IMAGE=wrouesnel/unifi-controller
+  - secure: YN9S++MgnCDgOENP2mCkci6SlwAjCKzF/b7jOXQcM0DX5ZHLl+kmE3guRwoos7QONymhiAjDWPiz4pC/pCxVfAeqFEzkE3IcuBFpAtaRMwO+521RZNLp+AMc9oHUZZbbxh8AsYj1FC22czBgZzPcPubEUfXh6N0NYfen8QBxee1L2n+03Z4fSvT5goMozFi1KZRD+QCe0AA1AFytt0h7O/ZJWWZFMjYEaBn7Kjy2lJYg6jViEh40lUG8izZMKuf2Dy/wO8ZkO9nXDyQItRcPr/ZHOM/ymu557QYy6o2MT+0xQy8C2/51fzvVJy6Iy5mf3k9q1GEB3gcHqGYmlovmb2Sz5MrdZrWOKrbpEclZ8ufEwf1aEJZtDdWGpx4GAUYkgF1CJ1bb8vHCsh085fheEW2YInnCHmLJzgiQeQKpp5DVZK02ReK+g7MIgaYlPNaWaO5xUhPR/DzumYLPFGLhUDHTU96r2iTOWyC5dU/+ezP8b6qBaybEkUpS9JbjlbfCVEaz+1KvhXtxfCqeXYucPViGWff53J/jvu2omEoyduPpdXf/UGBGIzd9x8uMU3ydmjvfy848DgtHu4Hhq+nYHHl7XlPfbg+hN1AX591JxzhJONcSrvD/VI4yzbLu/g9HG0TUHFofQauflJfDyRYXeU64RGrK2Tlbk+lFG+dfAeQ=
+  - secure: AAErpfYidpTo7mmQWENRvYHnK/N+xOJ/0blEQ6S/N8HBTc1V0hhoMz/8Z7GDaHnorqxeDzdA+6zhA4tnq6eQ0Rcf0gBX4KzCi9NpEuSxpSefisSzH2qi0XX7sr5OKUpDe2/7y6fcqdDBL3STkx/3m5IuMj+K1qfMQKHBQaONupUawAkF/slkUyGRNNR4ho9mi0CfRyffKzlVQZ12sh/U1yovKfZxMMhZXQxrBaw8z7NSFXwUFM2eQknR2V8fvz37y8VrL1zNV4l+Q7LxzNO219n/5xrnr5CN784csGjMDfmQoPdOxtY8X71oFWbHIlLAeTLOXrOV8TJpqE1t0Bf545y0hQQq2SuwH0wNHVPN5HzMDWXhhV0ZTioMIFPsbwm4iMv92DqXCTbLNsli/rO65YkV9Nb7QYl8vNWqGIKhhKWVAGf1FEahl3BxqLJQicbNNKZ23Yu2DokKn+56IG+4NVULgUhed54ePiW2JgNEdCiW3NGjgzdqhqSlTVRzembIUVjAhhJlwWaeJ8F+yUUJN+ZG6cmI9sQk9b1EhbT72ZpvFfyDR4qj/GEWjTPFhx8bQF54RbKYC3RSSp2ierJfcRKiKQsu4Xw3k6m2+rvOL0rCFWhqLyrY82dHDXiiM6RHfox09AweGm1fSN4XSgRs2rAM38TV3ntKI8DyUfxZovQ=
