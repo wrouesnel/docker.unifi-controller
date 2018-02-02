@@ -1,7 +1,7 @@
 # Standalone PowerDNS recursor
 ARG DOCKER_PREFIX=
 
-FROM ${DOCKER_PREFIX}ubuntu:zesty
+FROM ${DOCKER_PREFIX}ubuntu:artful
 
 MAINTAINER Will Rouesnel <w.rouesnel@gmail.com>
 
@@ -11,7 +11,7 @@ ARG URL_P2CLI=https://github.com/wrouesnel/p2cli/releases/download/r4/p2
 #ARG URL_GOSU=https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64
 #ARG URL_PDNS_REPO=http://repo.powerdns.com/ubuntu
 
-ARG URL_UNIFI=http://dl.ubnt.com/unifi/5.4.16/unifi_sysvinit_all.deb
+ARG URL_UNIFI=http://dl.ubnt.com/unifi/5.6.29/unifi_sysvinit_all.deb
 
 ARG http_proxy=
 ARG https_proxy=
