@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/wrouesnel/docker.unifi-controller.svg?branch=master)](https://travis-ci.org/wrouesnel/docker.unifi-controller)
+
 # Execution Requirements
 The container is designed to work with a read-only filesystem.
 
