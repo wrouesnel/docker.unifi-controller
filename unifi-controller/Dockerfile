@@ -11,7 +11,7 @@ ARG URL_P2CLI=https://github.com/wrouesnel/p2cli/releases/download/r4/p2
 #ARG URL_GOSU=https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64
 #ARG URL_PDNS_REPO=http://repo.powerdns.com/ubuntu
 
-ARG URL_UNIFI=http://dl.ubnt.com/unifi/5.6.29/unifi_sysvinit_all.deb
+ARG URL_UNIFI=https://dl.ubnt.com/unifi/5.10.17/unifi_sysvinit_all.deb
 
 ARG http_proxy=
 ARG https_proxy=
