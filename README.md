@@ -46,7 +46,7 @@ Deploying the unifi controller via Ansible:
   - name: deploying unifi controller container
     docker_container:
       name: unifi-controller
-      image: wrouesnel/unifi-controller
+      image: ghcr.io/wrouesnel/unifi-controller
       state: started
       pull: true
       purge_networks: yes
