@@ -1,5 +1,9 @@
 #!/bin/bash
 
+log() {
+  echo "$*" 1>&2
+}
+
 fatal() {
   echo "$*" 1>&2
   exit 1
@@ -10,8 +14,13 @@ mkdir -p "${DATA_DIR}/unifi-controller/data" || fatal "Could not ensure data dir
 
 # There's no easy way to redirect the mongo logs, so do it here.
 mkdir -p /run/unifi-logs || fatal "Could not make /run/unifi-logs"
-for logfile in server.log tasks.log migration.log hserr.log mongod.log access.log ; do
+for logfile in server.log tasks.log migration.log mongod.log hserr.log access.log ; do
+  if [ ! -e /run/log/${logfile%.*} ]; then 
+    fatal 1 "Waiting for /run/log/${logfile%.*} to be created by syslog-ng"
+  fi
+
   if [ ! -e "/run/unifi-logs/${logfile}" ]; then
+    log "Linking $logfile to /run/log/${logfile%.*}"
     ln -sf "/run/log/${logfile%.*}" /run/unifi-logs/$logfile || fatal "Could not redirect mongodb logs to /run/unifi-logs/${logfile}"
   fi
 done
