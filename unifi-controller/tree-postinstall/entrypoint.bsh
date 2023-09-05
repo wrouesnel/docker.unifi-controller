@@ -220,7 +220,7 @@ chmod 0755 \
 #p2 -t /etc/nginx/nginx.conf.p2 -o /run/nginx.conf || ( echoerr "Templating nginx config failed." ; exit 1 )
 #chmod 644 /run/nginx.conf
 log "Templating syslog-ng configuration..."
-export SERVICES="$(ls -1 /etc/services | tr '\n' ' ') server tasks migration hserr mongod access"
+export SERVICES="$(ls -1 /etc/services | tr '\n' ' ') server tasks migration hserr mongod access unifi-server"
 p2 -t /etc/syslog-ng.conf.p2 -o /run/syslog-ng.conf || ( echoerr "Templating syslog-ng config failed." ; exit 1 )
 chmod 644 /run/syslog-ng.conf
 
