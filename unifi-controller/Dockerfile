@@ -37,17 +37,19 @@ RUN apt update && apt install --no-install-recommends -y \
         openssl \
         pwgen \
         sudo \
-        curl dnsutils apache2-utils && \
+        curl dnsutils apache2-utils less net-tools lsof \
     # Templating engine
-    curl -L "$URL_P2CLI" --output /usr/local/bin/p2 && \
-    chmod +x /usr/local/bin/p2 && \
-    apt install -y unifi && \
-    ln -sf ${DATA_DIR}/unifi-controller/data /usr/lib/unifi/data  && \
-    ln -sf /run/unifi-logs /usr/lib/unifi/logs  && \
-    ln -sf ${DATA_DIR}/unifi-controller/work /usr/lib/unifi/work  && \
-    ln -sf /run/unifi /usr/lib/unifi/run  && \
+    && curl -L "$URL_P2CLI" --output /usr/local/bin/p2 \
+    && chmod +x /usr/local/bin/p2 \
+    && apt install -y unifi \
+    # Remove the existing symlinks
+    && rm -f /usr/lib/unifi/data /usr/lib/unifi/logs /usr/lib/unifi/work /usr/lib/unifi/run \
+    && ln -sf "${DATA_DIR}/unifi-controller/data" "/usr/lib/unifi/data" \
+    && ln -sf "/run/unifi-logs" "/usr/lib/unifi/logs" \
+    && ln -sf "${DATA_DIR}/unifi-controller/work" "/usr/lib/unifi/work" \
+    && ln -sf "/run/unifi" "/usr/lib/unifi/run" \
     # Cleanup    
-    apt-get autoremove -y
+    && apt-get autoremove -y
     # Delete nginx default configuration.
     #rm -rf /etc/nginx/sites-enabled /etc/nginx/sites-available /etc/nginx/snippets /etc/nginx/conf.d
 

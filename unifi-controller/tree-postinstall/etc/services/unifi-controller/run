@@ -1,33 +1,47 @@
-#!/bin/sh
+#!/bin/bash
 
-# Setup logging fifos.
-[ ! -e /run/log/unifi-controller ] && mkfifo /run/log/unifi-controller
+fatal() {
+  echo "$*" 1>&2
+  exit 1
+}
 
-# Setup the additional fifos 
-[ ! -e /run/log/unifi-server ] && mkfifo /run/log/unifi-server
-[ ! -e /run/log/unifi-mongodb ] && mkfifo /run/log/unifi-mongodb
-
-mkdir -p /run/unifi
-
-mkdir -p ${DATA_DIR}/unifi-controller/data
-mkdir -p /run/unifi
+mkdir -p /run/unifi || fatal "Could not make /run/unifi"
+mkdir -p "${DATA_DIR}/unifi-controller/data" || fatal "Could not ensure data directory exists"
 
 # There's no easy way to redirect the mongo logs, so do it here.
-mkdir -p /run/unifi-logs
-[ ! -e /run/unifi-logs/mongod.log ] && ln -sf /run/log/unifi-mongodb /run/unifi-logs/mongod.log
+mkdir -p /run/unifi-logs || fatal "Could not make /run/unifi-logs"
+for logfile in server.log tasks.log migration.log hserr.log mongod.log access.log ; do
+  if [ ! -e "/run/unifi-logs/${logfile}" ]; then
+    ln -sf "/run/log/${logfile%.*}" /run/unifi-logs/$logfile || fatal "Could not redirect mongodb logs to /run/unifi-logs/${logfile}"
+  fi
+done
 
 export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
-export PATH=/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin:$PATH
+export PATH="/usr/lib/jvm/java-1.8.0-openjdk-amd64/bin:$PATH"
 
 JVM_OPTS="
+  -Djava.awt.headless=false
+  -Dfile.encoding=UTF-8
+  -Dapple.awt.UIElement=true
+  -Dunifi.core.enabled=false
+
+  -XX:+ExitOnOutOfMemoryError
+  -XX:+CrashOnOutOfMemoryError
+  -XX:ErrorFile=/run/unifi-logs/hserr.log
+
+  --add-opens java.base/java.lang=ALL-UNNAMED
+  --add-opens java.base/java.time=ALL-UNNAMED
+  --add-opens java.base/sun.security.util=ALL-UNNAMED
+  --add-opens java.base/java.io=ALL-UNNAMED
+  --add-opens java.rmi/sun.rmi.transport=ALL-UNNAMED
+
+
   -Dunifi.datadir=${DATA_DIR}/unifi-controller/data
   -Dunifi.rundir=/run/unifi
   -Dunifi.logdir=/run/unifi-logs
 
   -Dlog4j.configuration=file:/usr/lib/unifi/lib/log4j.properties
-
-  -Djava.awt.headless=false
-  -Dfile.encoding=UTF-8"
+"
 
 if [ ! -z "${JVM_MAX_HEAP_SIZE}" ]; then
   JVM_OPTS="${JVM_OPTS} -Xmx${JVM_MAX_HEAP_SIZE}"
@@ -41,7 +55,7 @@ if [ ! -z "${JVM_MAX_THREAD_STACK_SIZE}" ]; then
   JVM_OPTS="${JVM_OPTS} -Xss${JVM_MAX_THREAD_STACK_SIZE}"
 fi
 
-cd /usr/lib/unifi
+cd /usr/lib/unifi || fatal "Could not enter /usr/lib/unifi"
 
 exec java $JVM_OPTS \
     -classpath /usr/share/java/commons-daemon.jar:/usr/lib/unifi/lib/ace.jar \

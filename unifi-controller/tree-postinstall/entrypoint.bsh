@@ -101,12 +101,15 @@ export DATA_DIR=/data
 export UNIFI_DATA_DIR=${DATA_DIR}/unifi-controller
 
 log "Ensuring persistent data status..."
-if ! mountpoint ${DATA_DIR} && [ $(stdbool "$DEV_ALLOW_EPHEMERAL_DATA") != "y" ] ; then
-    echoerr "DATA_DIR is not a mountpoint. Refusing to run with ephemeral data directory."
-    exit 1
-else
-    echoerr "WARNING: allowing an ephemeral data directory."
-    mkdir -m 755 -p "$DATA_DIR"
+if ! mountpoint ${DATA_DIR}; then
+    if [ "$(stdbool "$DEV_ALLOW_EPHEMERAL_DATA")" != "y" ]; then
+        echoerr "WARNING: allowing an ephemeral data directory."
+        mkdir -m 755 -p "$DATA_DIR"
+
+    else
+        echoerr "DATA_DIR is not a mountpoint. Refusing to run with ephemeral data directory."
+        exit 1
+    fi
 fi
 chown root:root ${DATA_DIR}
 chmod 0755 ${DATA_DIR}
@@ -217,7 +220,7 @@ chmod 0755 \
 #p2 -t /etc/nginx/nginx.conf.p2 -o /run/nginx.conf || ( echoerr "Templating nginx config failed." ; exit 1 )
 #chmod 644 /run/nginx.conf
 log "Templating syslog-ng configuration..."
-export SERVICES="$(ls -1 /etc/services | tr '\n' ' ') unifi-server unifi-mongodb"
+export SERVICES="$(ls -1 /etc/services | tr '\n' ' ') server tasks migration hserr mongod access"
 p2 -t /etc/syslog-ng.conf.p2 -o /run/syslog-ng.conf || ( echoerr "Templating syslog-ng config failed." ; exit 1 )
 chmod 644 /run/syslog-ng.conf
 

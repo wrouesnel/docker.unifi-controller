@@ -1,11 +1,11 @@
-@version: 3.8
+@version: 3.13
 
 template multiapp {
     template("${ISODATE} ${service} : ${MSG}\n");
 };
 
 destination d_container {
-    pipe( "/proc/1/fd/1" flags(no-multi-line) flush-lines(1) template(multiapp) );
+    file( "/proc/1/fd/1" flags(no-multi-line) flush-lines(1) template(multiapp) );
 };
 
 {% for service in SERVICES|split:" " %}
